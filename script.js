@@ -29,7 +29,7 @@
     .text("0:00h");
 
     queue()
-    .defer(d3.json, "ivory.geojson")
+    .defer(d3.json, "https://raw.github.com/yarox/d4d-visor/master/ivory.geojson?login=yarox&token=6e6c78b4cdd237c107e6f55b07aaabd3")
     .defer(d3.csv, "https://raw.github.com/yarox/d4d-visor/master/data/weights0_0.csv?login=yarox&token=4fbb133fa73e368d7ed54b2e2e558f74")
     .await(ready);
 
