@@ -13,53 +13,57 @@
 }
 
 </style>
+
 <body>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://d3js.org/queue.v1.min.js"></script>
     <script>
 
-    var width = 900,
-    height = 600;
+    var width = window.innerWidth * 0.7;
+        height = window.innerHeight * 0.6;
 
-    color = d3.scale.linear()
-    .range(["#FDE0DD", "#49006A"])
-    .domain([0, 1700]);
+    color = d3.scale.log()
+        .range(["#FFFFE5", "#004529"])
+        .domain([1, 1650])
+        .clamp(true);
 
     var projection = d3.geo.mercator()
-    .center([7.1317, 5.5230])
-    .translate([width / 2, height / 2])
-    .rotate([9, -0.75])
-    .scale(20000);
+        .center([7.1317, 5.5230])
+        .translate([width / 2, 2 * height / 3])
+        .rotate([9, -0.75])
+        .scale(22000);
 
     var path = d3.geo.path()
-    .projection(projection);
+        .projection(projection);
 
     var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+        .attr("width", width)
+        .attr("height", height);
 
     var day_text = svg.append("text")
-    .attr("class", "day")
-    .attr("transform", "translate(460, 200)")
-    .text("sunday");
+        .attr("class", "day")
+        .attr("transform",
+              "translate(" + (width / 2) + ", " + height / 2 + ")")
+        .text("sunday");
 
     var hour_text = svg.append("text")
-    .attr("class", "hour")
-    .attr("transform", "translate(460, 260)")
-    .text("0:00h");
+        .attr("class", "hour")
+        .attr("transform",
+              "translate(" + (width / 2) + ", " + ((height / 2) + 60) + ")")
+        .text("12:00 AM");
 
     queue()
-    .defer(d3.json, "ivory.geojson")
-    .defer(d3.csv, "data/weights0_0.csv")
-    .await(ready);
+        .defer(d3.json, "ivory.geojson")
+        .defer(d3.csv, "data/weights0_0.csv")
+        .await(ready);
 
     function ready(error, ivory, weights) {
         svg.append("g")
-        .attr("class", "counties")
-        .selectAll("path")
+            .attr("class", "counties")
+            .selectAll("path")
         .data(ivory.features)
-        .enter().append("path")
-        .attr("d", path)
+            .enter().append("path")
+            .attr("d", path)
 
         redraw(error, weights);
     }
@@ -70,40 +74,56 @@
         weights.forEach(function(d) { rateById[d.id] = +d.weight; });
 
         svg.selectAll("path")
-        .transition()
-        .duration(750)
-        .attr("fill", function(d) { return color(rateById[d.id] || 1); });
+            .transition()
+            .duration(750)
+            .attr("fill", function(d) { return color(rateById[d.id] || 1); });
     }
 
     var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
-    4: "thursday", 5: "friday", 6: "saturday"}
-    var hour = 0;
-    var day = 0;
+                4: "thursday", 5: "friday", 6: "saturday"};
+        hour = 0;
+        day = 0;
 
     window.focus();
     d3.select(window).on("keydown", function() {
         switch (d3.event.keyCode) {
-          case 37: hour = Math.max(0, hour - 1); break;
-          case 39: hour = Math.min(23, hour + 1); break;
-          case 38: day = Math.max(0, day - 1); break;
-          case 40: day = Math.min(6, day + 1); break;
-      }
-      update();
+          case 37: hour = decrease_hour(hour); break;
+          case 39: hour = increase_hour(hour); break;
+          case 38: day = decrease_day(day); break;
+          case 40: day = increase_day(day); break;
+    }
+    update();
 
-      function update() {
+    function increase_day(current) {
+        return (current != 6) ? Math.min(6, current + 1) : 0;
+    }
+    function decrease_day(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 6;
+    }
+    function increase_hour(current) {
+        return (current != 23) ? Math.min(23, current + 1) : 0;
+    }
+    function decrease_hour(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 23;
+    }
+
+    function update() {
+        temp_hour = (hour % 12 != 0) ? hour % 12 : 12;
+        suffix = (hour / 12 != 1) ?  "AM": "PM";
+
         hour_text
-        .transition()
-        .text(hour+":00h");
+            .transition()
+            .text(temp_hour + ":00 " + suffix);
 
         day_text
-        .transition()
-        .text(days[day]);
+            .transition()
+            .text(days[day]);
 
         queue()
-        .defer(d3.csv, "data/weights" + day + "_" + hour + ".csv")
-        .await(redraw);
+            .defer(d3.csv, "data/weights" + day + "_" + hour + ".csv")
+            .await(redraw);
     }
 
 });
 
-    </script>
+</script>
