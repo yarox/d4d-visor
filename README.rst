@@ -9,9 +9,9 @@ Choropleth
 ==========
 The choropleth shows the population density over the different regions, grouped by day of the week and time slot.
 
-Bar Plot
-========
-The bar plot shows the total population density grouped by day of the week and time slot.
+.. Bar Plot
+.. ========
+.. The bar plot shows the total population density grouped by day of the week and time slot.
 
 Take a look!
 ============
