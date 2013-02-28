@@ -23,7 +23,7 @@
         height = window.innerHeight * 0.6;
 
     color = d3.scale.log()
-        .range(["#FFFFE5", "#004529"])
+        .range(["#BFD3E6", "#49006A"])
         .domain([1, 1650])
         .clamp(true);
 
@@ -108,12 +108,12 @@
     }
 
     function update() {
-        temp_hour = (hour % 12 != 0) ? hour % 12 : 12;
-        suffix = (hour / 12 != 1) ?  "AM": "PM";
+        adjusted_hour = (hour % 12 != 0) ? hour % 12 : 12;
+        suffix = (hour >= 12)? 'pm' : 'am';
 
         hour_text
             .transition()
-            .text(temp_hour + ":00 " + suffix);
+            .text(adjusted_hour + ":00 " + suffix);
 
         day_text
             .transition()
