@@ -13,8 +13,10 @@ The bar plot shows the total population density grouped by day of the week and t
 
 Take a look!
 ============
-Clone the repo and start a local web server, For example, you can run Python's built-in server:
+If you want to see it running, clone the repo and start a local web server. For example, you can run Python's built-in server:
+
+.. code:: bash
 
     python -m SimpleHTTPServer 8888 &
 
-Once this is running, go to <http://localhost:8888/>.
+Once this is running, go to http://localhost:8888/.
