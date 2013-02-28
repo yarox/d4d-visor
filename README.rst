@@ -1,6 +1,8 @@
 =========
 d4d-visor
 =========
+.. image:: thumbnail.png
+
 Visor for the D4D challenge commuting data over the Ivory Coast. We've used D3js for displaying some collected data using a choropleth and a bar plot.
 
 Choropleth
