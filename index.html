@@ -1,13 +1,129 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>D4D Challenge Visor</title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="css/d4d-visor.css">
-    </head>
-    <body>
-        <script src="js/lib/d3/d3.v3.min.js" lang="javascript"></script>
-        <script src="js/lib/d3/queue.v1.min.js" lang="javascript"></script>
-        <script src="js/d4d-visor.js" lang="javascript"></script>
-    </body>
-</html>
+<meta charset="utf-8">
+<style>
+
+.day {
+    font: 300 78px Helvetica Neue;
+    fill: #666;
+}
+
+.hour {
+    font: 300 58px Helvetica Neue;
+    fill: #666;
+}
+
+</style>
+
+<body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/queue.v1.min.js"></script>
+    <script>
+
+    var width = window.innerWidth * 0.7;
+        height = window.innerHeight * 0.6;
+
+    color = d3.scale.log()
+        .range(["#BFD3E6", "#49006A"])
+        .domain([1, 1650])
+        .clamp(true);
+
+    var projection = d3.geo.mercator()
+        .center([7.1317, 5.5230])
+        .translate([width / 2, 2 * height / 3])
+        .rotate([9, -0.75])
+        .scale(22000);
+
+    var path = d3.geo.path()
+        .projection(projection);
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var day_text = svg.append("text")
+        .attr("class", "day")
+        .attr("transform",
+              "translate(" + (width / 2) + ", " + height / 2 + ")")
+        .text("sunday");
+
+    var hour_text = svg.append("text")
+        .attr("class", "hour")
+        .attr("transform",
+              "translate(" + (width / 2) + ", " + ((height / 2) + 60) + ")")
+        .text("12:00 am");
+
+    queue()
+        .defer(d3.json, "ivory.geojson")
+        .defer(d3.csv, "data/weights0_0.csv")
+        .await(ready);
+
+    function ready(error, ivory, weights) {
+        svg.append("g")
+            .attr("class", "counties")
+            .selectAll("path")
+        .data(ivory.features)
+            .enter().append("path")
+            .attr("d", path)
+
+        redraw(error, weights);
+    }
+
+    function redraw(error, weights) {
+        var rateById = {};
+
+        weights.forEach(function(d) { rateById[d.id] = +d.weight; });
+
+        svg.selectAll("path")
+            .transition()
+            .duration(750)
+            .attr("fill", function(d) { return color(rateById[d.id] || 1); });
+    }
+
+    var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
+                4: "thursday", 5: "friday", 6: "saturday"};
+        hour = 0;
+        day = 0;
+
+    window.focus();
+    d3.select(window).on("keydown", function() {
+        switch (d3.event.keyCode) {
+          case 37: hour = decrease_hour(hour); break;
+          case 39: hour = increase_hour(hour); break;
+          case 38: day = decrease_day(day); break;
+          case 40: day = increase_day(day); break;
+    }
+    update();
+
+    function increase_day(current) {
+        return (current != 6) ? Math.min(6, current + 1) : 0;
+    }
+    function decrease_day(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 6;
+    }
+    function increase_hour(current) {
+        return (current != 23) ? Math.min(23, current + 1) : 0;
+    }
+    function decrease_hour(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 23;
+    }
+
+    function update() {
+        adjusted_hour = (hour % 12 != 0) ? hour % 12 : 12;
+        suffix = (hour >= 12)? 'pm' : 'am';
+
+        hour_text
+            .transition()
+            .text(adjusted_hour + ":00 " + suffix);
+
+        day_text
+            .transition()
+            .text(days[day]);
+
+        queue()
+            .defer(d3.csv, "data/weights" + day + "_" + hour + ".csv")
+            .await(redraw);
+    }
+
+});
+
+</script>
