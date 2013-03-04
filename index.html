@@ -22,6 +22,12 @@ body {
     font-size: 58px;
 }
 
+.separator {
+    stroke: #666;
+    stroke-width: 1;
+    stroke-dasharray: 5,5
+}
+
 .axis path,
 .axis line {
     fill: #666;
@@ -41,7 +47,7 @@ body {
     <script>
 
     var margin = {top: 50, right: 20, bottom: 30, left: 40},
-        width = window.innerWidth * 0.7 - margin.left - margin.right,
+        width = window.innerWidth * 0.8 - margin.left - margin.right,
         height = window.innerHeight * 0.7 - margin.top - margin.bottom;
 
     // Main svg container
@@ -70,16 +76,16 @@ body {
     var map = svg.append("svg:g")
         .attr("class", "counties")
         .attr("transform",
-              "translate(" + 25 + "," + 50 + ")");
+              "translate(" + 515 + "," + 0 + ")");
 
     // Chart container
     var chart_width = 450 - margin.left - margin.right,
-        chart_height = 150 - margin.top - margin.bottom;
+        chart_height = 175 - margin.top - margin.bottom;
 
     var chart = svg.append("svg:g")
         .attr("class", "chart")
         .attr("transform",
-              "translate(" + 515 + "," + 315 + ")");
+              "translate(" + 110 + "," + 315 + ")");
 
     var bar = chart.append("svg:g")
         .attr("class", "bar");
@@ -103,7 +109,7 @@ body {
     var label = svg.append("svg:g")
         .attr("class", "label")
         .attr("transform",
-              "translate(" + 900 + ", " + 150 + ")")
+              "translate(" + 500 + ", " + 150 + ")")
 
     var day_text = label.append("text")
         .attr("class", "day")
@@ -114,6 +120,15 @@ body {
         .attr("transform",
               "translate(" + 0 + ", " + 60 + ")")
         .text("12:00 am");
+
+    // Line separator
+    var separator = svg.append("svg:line")
+        .attr("class", "separator")
+        .attr("x1", 550)
+        .attr("y1", 0)
+        .attr("x2", 550)
+        .attr("y2", 500);
+
 
     // Other variables
     var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
