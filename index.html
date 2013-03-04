@@ -2,14 +2,35 @@
 <meta charset="utf-8">
 <style>
 
-.day {
-    font: 300 78px Helvetica Neue;
+body {
+    font: 10px Helvetica Neue;
     fill: #666;
 }
 
-.hour {
-    font: 300 58px Helvetica Neue;
+.label {
+    font-family: Helvetica Neue;
+    font-weight: 300;
     fill: #666;
+    text-anchor: end;
+}
+
+.day {
+    font-size: 92px;
+}
+
+.hour {
+    font-size: 58px;
+}
+
+.axis path,
+.axis line {
+    fill: #666;
+    stroke: #666;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
 }
 
 </style>
@@ -19,10 +40,20 @@
     <script src="http://d3js.org/queue.v1.min.js"></script>
     <script>
 
-    var width = window.innerWidth * 0.7;
-        height = window.innerHeight * 0.6;
+    var margin = {top: 50, right: 20, bottom: 30, left: 40},
+        width = window.innerWidth * 0.7 - margin.left - margin.right,
+        height = window.innerHeight * 0.7 - margin.top - margin.bottom;
 
-    color = d3.scale.log()
+    // Main svg container
+    var svg = d3.select("body").insert("svg:svg", "form")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("svg:g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+    // Map container
+    var color = d3.scale.log()
         .range(["#BFD3E6", "#49006A"])
         .domain([1, 1650])
         .clamp(true);
@@ -31,39 +62,96 @@
         .center([7.1317, 5.5230])
         .translate([width / 2, 2 * height / 3])
         .rotate([9, -0.75])
-        .scale(22000);
+        .scale(26000);
 
     var path = d3.geo.path()
         .projection(projection);
 
-    var svg = d3.select("body").append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    var day_text = svg.append("text")
-        .attr("class", "day")
+    var map = svg.append("svg:g")
+        .attr("class", "counties")
         .attr("transform",
-              "translate(" + (width / 2) + ", " + height / 2 + ")")
+              "translate(" + 25 + "," + 50 + ")");
+
+    // Chart container
+    var chart_width = 450 - margin.left - margin.right,
+        chart_height = 150 - margin.top - margin.bottom;
+
+    var chart = svg.append("svg:g")
+        .attr("class", "chart")
+        .attr("transform",
+              "translate(" + 515 + "," + 315 + ")");
+
+    var bar = chart.append("svg:g")
+        .attr("class", "bar");
+
+    var axis = chart.append("svg:g")
+        .attr("class", "x axis");
+
+    var x = d3.scale.ordinal()
+        .rangeRoundBands([0, chart_width], .1);
+
+    var y = d3.scale.linear()
+        .range([chart_height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .tickValues([0,2,4,6,8,10,12,14,16,18,20,22])
+        .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
+        .orient("bottom");
+
+    // Label container
+    var label = svg.append("svg:g")
+        .attr("class", "label")
+        .attr("transform",
+              "translate(" + 900 + ", " + 150 + ")")
+
+    var day_text = label.append("text")
+        .attr("class", "day")
         .text("sunday");
 
-    var hour_text = svg.append("text")
+    var hour_text = label.append("text")
         .attr("class", "hour")
         .attr("transform",
-              "translate(" + (width / 2) + ", " + ((height / 2) + 60) + ")")
+              "translate(" + 0 + ", " + 60 + ")")
         .text("12:00 am");
+
+    // Other variables
+    var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
+                4: "thursday", 5: "friday", 6: "saturday"};
+        hour = 0;
+        day = 0;
 
     queue()
         .defer(d3.json, "ivory.geojson")
         .defer(d3.csv, "data/weights0_0.csv")
+        .defer(d3.csv, "data2.csv")
         .await(ready);
 
-    function ready(error, ivory, weights) {
-        svg.append("g")
-            .attr("class", "counties")
-            .selectAll("path")
+    function ready(error, ivory, weights, data) {
+        map.selectAll("path")
         .data(ivory.features)
             .enter().append("path")
-            .attr("d", path)
+            .attr("d", path);
+
+        var array = [];
+        for (var key in data[day]) { array.push(data[day][key]); }
+            array.forEach(function(d) { d = +d; });
+
+        x.domain(array.map(function(d, i) { return i; }));
+        y.domain([0, d3.max(array, function(d) { return d; })]);
+
+        axis.attr("transform", "translate(0," + chart_height + ")")
+            .call(xAxis);
+
+        chart.selectAll(".bar")
+            .data(array)
+            .enter().append("rect")
+            .attr("fill", function(d, i) {
+                    return (i < 12) ? "#BFD3E6" : "#49006A" })
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height - y(d); });
 
         redraw(error, weights);
     }
@@ -73,26 +161,22 @@
 
         weights.forEach(function(d) { rateById[d.id] = +d.weight; });
 
-        svg.selectAll("path")
+        map.selectAll("path")
             .transition()
             .duration(750)
             .attr("fill", function(d) { return color(rateById[d.id] || 1); });
     }
 
-    var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
-                4: "thursday", 5: "friday", 6: "saturday"};
-        hour = 0;
-        day = 0;
-
     window.focus();
     d3.select(window).on("keydown", function() {
         switch (d3.event.keyCode) {
-          case 37: hour = decrease_hour(hour); break;
-          case 39: hour = increase_hour(hour); break;
-          case 38: day = decrease_day(day); break;
-          case 40: day = increase_day(day); break;
-    }
-    update();
+            case 37: hour = decrease_hour(hour); break;
+            case 39: hour = increase_hour(hour); break;
+            case 38: day = decrease_day(day); break;
+            case 40: day = increase_day(day); break;
+        }
+        update();
+    });
 
     function increase_day(current) {
         return (current != 6) ? Math.min(6, current + 1) : 0;
@@ -123,7 +207,5 @@
             .defer(d3.csv, "data/weights" + day + "_" + hour + ".csv")
             .await(redraw);
     }
-
-});
 
 </script>
