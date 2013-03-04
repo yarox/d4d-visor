@@ -1,6 +1,9 @@
 
+# Update the package system
+sudo apt-get -y update
+
 # Add some extra repositories
-sudo apt-get install python-software-properties
+sudo apt-get install -y python-software-properties
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
 
 # Update the package system
