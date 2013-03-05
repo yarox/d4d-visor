@@ -119,7 +119,7 @@ body {
         .attr("class", "hour")
         .attr("transform",
               "translate(" + 0 + ", " + 60 + ")")
-        .text("12:00 am");
+        .text("1:00 am");
 
     // Line separator
     var separator = svg.append("svg:line")
@@ -132,27 +132,27 @@ body {
     // Other variables
     var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
                 4: "thursday", 5: "friday", 6: "saturday"},
-        hour = 0,
+        hour = 1,
         day = 0,
         data = 0;
 
     // Load the files and display the data
     queue()
         .defer(d3.json, "ivory.geojson")
-        .defer(d3.csv, "data/weights0_0.csv")
-        .defer(d3.csv, "data/weights_grouped.csv")
+        .defer(d3.csv, "data/weights0_1.csv")
+        .defer(d3.csv, "data/grouped_weights.csv")
         .await(ready);
 
     function ready(error, ivory, weights, groups) {
+        data = groups;
+
         map.selectAll("path")
-        .data(ivory.features)
+            .data(ivory.features)
             .enter().append("path")
             .attr("d", path);
 
-        data = groups;
         var array = [];
-        for (var key in data[day]) { array.push(data[day][key]); }
-            array.forEach(function(d) { d = +d; });
+        for (var key in data[day]) { array.push(+data[day][key]); }
 
         x.domain(array.map(function(d, i) { return i; }));
         y.domain([0, d3.max(array, function(d) { return d; })]);
@@ -184,12 +184,14 @@ body {
             .attr("fill", function(d) { return color(rateById[d.id] || 1); });
 
         var array = [];
-        for (var key in data[day]) { array.push(data[day][key]); }
-        array.forEach(function(d) { d = +d; });
+        for (var key in data[day]) { array.push(+data[day][key]); }
+
+        x.domain(array.map(function(d, i) { return i; }));
+        y.domain([0, d3.max(array, function(d) { return d; })]);
 
         chart.selectAll("rect")
             .data(array)
-            .attr("fill", function(d, i) { return colorize(i); })
+            .attr("fill", function(d, i) { return colorize(d, i); })
             .transition()
             .duration(750)
             .attr("y", function(d) { return y(d); })
@@ -207,20 +209,18 @@ body {
         update();
     });
 
-    function colorize(i) {
-        var color;
-
+    function colorize(d, i) {
         if (i == hour) {
-            color = "#666";
+            code = "#666";
         } else {
             if (i < 12) {
-                color = "#BFD3E6";
+                code = "#BFD3E6";
             } else {
-                color = "#49006A";
+                code = "#49006A";
             }
         }
 
-        return color;
+        return code;
     }
 
     function increase_day(current) {
@@ -248,8 +248,14 @@ body {
             .transition()
             .text(days[day]);
 
+        if (hour == 0 && day != 0) {
+            source = "" + day - 1 + "_" + 23;
+        } else {
+            source = "" + day + "_" + hour;
+        }
+
         queue()
-            .defer(d3.csv, "data/weights" + day + "_" + hour + ".csv")
+            .defer(d3.csv, "data/weights" + source + ".csv")
             .await(redraw);
     }
 
