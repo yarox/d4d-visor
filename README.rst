@@ -3,7 +3,7 @@ d4d-visor
 =========
 .. image:: thumbnail.png
 
-Visor for the D4D challenge data over the Ivory Coast. We used Python_ for preprocessing the data and D3js_ for the displaying.
+Visor for the D4D challenge data over the Ivory Coast. We used Python_ for preprocessing the data and D3.js_ for the displaying.
 
 Choropleth
 ==========
@@ -24,4 +24,4 @@ If you want to see it running, clone the repo and start a local web server. For 
 Once this is running, go to http://localhost:8888/.
 
 .. _Python: http://www.python.org/
-.. _D3js: http://d3js.org/
+.. _D3.js: http://d3js.org/
