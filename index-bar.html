@@ -44,12 +44,18 @@ body {
         .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
         .orient("bottom");
 
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("body").insert("svg:svg", "form")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-        .append("g")
+        .append("svg:g")
         .attr("transform",
               "translate(" + margin.left + "," + margin.top + ")");
+
+    var chart = svg.append("svg:g")
+        .attr("class", "bar");
+
+    var axis = svg.append("svg:g")
+        .attr("class", "x axis")
 
     var day = 0;
 
@@ -65,17 +71,14 @@ body {
         x.domain(array.map(function(d, i) { return i; }));
         y.domain([0, d3.max(array, function(d) { return d; })]);
 
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
+        axis.attr("transform", "translate(0," + height + ")")
             .call(xAxis);
 
-        svg.selectAll(".bar")
+        chart.selectAll(".bar")
             .data(array)
             .enter().append("rect")
             .attr("fill", function(d, i) {
                     return (i < 12) ? "#BFD3E6" : "#49006A" })
-            .attr("class", "bar")
             .attr("x", function(d, i) { return x(i); })
             .attr("width", x.rangeBand())
             .attr("y", function(d) { return y(d); })
@@ -95,7 +98,7 @@ body {
             for (var key in data[day]) { array.push(data[day][key]); }
             array.forEach(function(d) { d = +d; });
 
-            svg.selectAll("rect")
+            chart.selectAll("rect")
                 .data(array)
                 .attr("fill", function(d, i) {
                     return (i < 12) ? "#BFD3E6" : "#49006A" })

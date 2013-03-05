@@ -101,9 +101,9 @@ body {
 
     var xAxis = d3.svg.axis()
         .scale(x)
-        .tickValues([0,2,4,6,8,10,12,14,16,18,20,22])
+        //.tickValues(d3.range(0, 24, 2))
         .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
-        .orient("bottom");
+        .orient("bottom")
 
     // Label container
     var label = svg.append("svg:g")
@@ -124,30 +124,32 @@ body {
     // Line separator
     var separator = svg.append("svg:line")
         .attr("class", "separator")
-        .attr("x1", 550)
+        .attr("x1", 540)
         .attr("y1", 0)
-        .attr("x2", 550)
+        .attr("x2", 540)
         .attr("y2", 500);
-
 
     // Other variables
     var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
-                4: "thursday", 5: "friday", 6: "saturday"};
-        hour = 0;
-        day = 0;
+                4: "thursday", 5: "friday", 6: "saturday"},
+        hour = 0,
+        day = 0,
+        data = 0;
 
+    // Load the files and display the data
     queue()
         .defer(d3.json, "ivory.geojson")
         .defer(d3.csv, "data/weights0_0.csv")
-        .defer(d3.csv, "data2.csv")
+        .defer(d3.csv, "data/weights_grouped.csv")
         .await(ready);
 
-    function ready(error, ivory, weights, data) {
+    function ready(error, ivory, weights, groups) {
         map.selectAll("path")
         .data(ivory.features)
             .enter().append("path")
             .attr("d", path);
 
+        data = groups;
         var array = [];
         for (var key in data[day]) { array.push(data[day][key]); }
             array.forEach(function(d) { d = +d; });
@@ -180,6 +182,19 @@ body {
             .transition()
             .duration(750)
             .attr("fill", function(d) { return color(rateById[d.id] || 1); });
+
+        var array = [];
+        for (var key in data[day]) { array.push(data[day][key]); }
+        array.forEach(function(d) { d = +d; });
+
+        chart.selectAll("rect")
+            .data(array)
+            .attr("fill", function(d, i) {
+                return (i < 12) ? "#BFD3E6" : "#49006A" })
+            .transition()
+            .duration(750)
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height -  y(d); });
     }
 
     window.focus();
