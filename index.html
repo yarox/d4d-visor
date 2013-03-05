@@ -189,8 +189,7 @@ body {
 
         chart.selectAll("rect")
             .data(array)
-            .attr("fill", function(d, i) {
-                return (i < 12) ? "#BFD3E6" : "#49006A" })
+            .attr("fill", function(d, i) { return colorize(i); })
             .transition()
             .duration(750)
             .attr("y", function(d) { return y(d); })
@@ -207,6 +206,22 @@ body {
         }
         update();
     });
+
+    function colorize(i) {
+        var color;
+
+        if (i == hour) {
+            color = "#666";
+        } else {
+            if (i < 12) {
+                color = "#BFD3E6";
+            } else {
+                color = "#49006A";
+            }
+        }
+
+        return color;
+    }
 
     function increase_day(current) {
         return (current != 6) ? Math.min(6, current + 1) : 0;
