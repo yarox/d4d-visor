@@ -85,7 +85,7 @@ body {
     var chart = svg.append("svg:g")
         .attr("class", "chart")
         .attr("transform",
-              "translate(" + 110 + "," + 315 + ")");
+              "translate(" + 125 + "," + 315 + ")");
 
     var bar = chart.append("svg:g")
         .attr("class", "bar");
@@ -94,14 +94,14 @@ body {
         .attr("class", "x axis");
 
     var x = d3.scale.ordinal()
-        .rangeRoundBands([0, chart_width], .1);
+        .rangeRoundBands([0, chart_width], 0.4);
 
     var y = d3.scale.linear()
         .range([chart_height, 0]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
-        //.tickValues(d3.range(0, 24, 2))
+        .tickValues(d3.range(0, 24, 2))
         .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
         .orient("bottom")
 
@@ -160,7 +160,7 @@ body {
         axis.attr("transform", "translate(0," + chart_height + ")")
             .call(xAxis);
 
-        chart.selectAll(".bar")
+        chart.selectAll("rect")
             .data(array)
             .enter().append("rect")
             .attr("fill", function(d, i) {
