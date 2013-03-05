@@ -12,6 +12,7 @@ sudo apt-get -y update
 # Install packages
 sudo apt-get install -y curl
 sudo apt-get install -y build-essential
+sudo apt-get install -y git
 sudo apt-get install -y python
 sudo apt-get install -y python-dev
 sudo apt-get install -y qgis python-qgis
