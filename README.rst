@@ -15,7 +15,7 @@ The bar chart shows the total population density grouped by day of the week and 
 
 Take a look!
 ==========
-If you want to see it running, clone the repo and start a local web server. For example, you can run Python's built-in server:
+If you want to see it running, you can either visit this link_ for a demo with fake data, or clone the repo and start a local web server. For example, you can run Python's built-in server:
 
 .. code:: bash
 
@@ -32,5 +32,6 @@ Once this is running, go to http://localhost:8888/ and use the **up** and **down
 .. _Python: http://www.python.org/
 .. _D3.js: http://d3js.org/
 .. _http-server: http://github.com/nodeapps/http-server
+.. _link: http://bl.ocks.org/yarox/5108994
 .. _d4d: http://www.d4d.orange.com/home
 __ d4d_
