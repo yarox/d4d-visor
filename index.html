@@ -1,13 +1,270 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>D4D Challenge Visor</title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="css/d4d-visor.css">
-    </head>
-    <body>
-        <script src="js/lib/d3/d3.v3.min.js" lang="javascript"></script>
-        <script src="js/lib/d3/queue.v1.min.js" lang="javascript"></script>
-        <script src="js/d4d-visor.js" lang="javascript"></script>
-    </body>
-</html>
+<meta charset="utf-8">
+<style>
+
+body,
+svg {
+    font: 10px Helvetica Neue;
+    fill: #666;
+    width: 100%;
+    height: 100%;
+    margin: 1% auto;
+    overflow: hidden;
+}
+
+.label {
+    font-family: Helvetica Neue;
+    font-weight: 300;
+    fill: #666;
+    text-anchor: end;
+}
+
+.day {
+    font-size: 92px;
+}
+
+.hour {
+    font-size: 58px;
+}
+
+.counties {
+  stroke: #fff;
+  stroke-width: .25px;
+}
+
+.separator {
+    stroke: #666;
+    stroke-width: 1;
+    stroke-dasharray: 5,5
+}
+
+.axis path,
+.axis line {
+    fill: #666;
+    stroke: #666;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
+
+</style>
+
+<body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/queue.v1.min.js"></script>
+    <script>
+
+    var width = 1200,
+        height = 600;
+
+    // Main svg container
+    var svg = d3.select("body").append("svg:svg")
+        .attr("viewBox", "0 0 " + width + " " + height)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("width", width)
+        .attr("height", height);
+
+    // Map container
+    var color = d3.scale.log()
+        .range(["#BFD3E6", "#49006A"])
+        .domain([1, 1650])
+        .clamp(true);
+
+    var projection = d3.geo.mercator()
+        .center([7.1317, 5.5230])
+        .rotate([9, -0.75])
+        .scale(26000);
+
+    var path = d3.geo.path()
+        .projection(projection);
+
+    var map = svg.append("svg:g")
+        .attr("class", "counties")
+        .attr("transform",
+              "translate(" + 575 + "," + 85 + ")");
+
+    // Chart container
+    var chart_width = 350
+        chart_height = 75;
+
+    var x = d3.scale.ordinal()
+        .domain(d3.range(0, 24))
+        .rangeRoundBands([0, chart_width], 0.4);
+
+    var y = d3.scale.pow().exponent(2.5)
+        .range([chart_height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .tickValues(d3.range(0, 24, 2))
+        .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
+        .orient("bottom");
+
+    var chart = svg.append("svg:g")
+        .attr("class", "chart")
+        .attr("transform",
+              "translate(" + 160 + "," + 315 + ")");
+
+    var bar = chart.append("svg:g")
+        .attr("class", "bar");
+
+    var axis = chart.append("svg:g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + chart_height + ")")
+        .call(xAxis);
+
+    // Label container
+    var label = svg.append("svg:g")
+        .attr("class", "label")
+        .attr("transform",
+              "translate(" + 500 + ", " + 150 + ")")
+
+    var day_text = label.append("text")
+        .attr("class", "day")
+        .text("sunday");
+
+    var hour_text = label.append("text")
+        .attr("class", "hour")
+        .attr("transform",
+              "translate(" + 0 + ", " + 60 + ")")
+        .text("1:00 am");
+
+    // Line separator
+    var separator = svg.append("svg:line")
+        .attr("class", "separator")
+        .attr("x1", 540)
+        .attr("y1", 0)
+        .attr("x2", 540)
+        .attr("y2", 500);
+
+    // Other variables
+    var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
+                4: "thursday", 5: "friday", 6: "saturday"},
+        hour = 1,
+        day = 0,
+        chart_weights = [];
+
+    // Load the files and display the data
+    queue()
+        .defer(d3.json, "data/map.geojson")
+        .defer(d3.csv, "data/weights0_1.csv")
+        .defer(d3.csv, "data/raw_weights.csv")
+        .await(ready);
+
+    function ready(error, map_shape, map_weights, raw_weights) {
+
+        // Load the raw_weights (Array of Objects) into an Array of Arrays for
+        // easier manipulation.
+        for (i in raw_weights) {
+            chart_weights[i] = [];
+            for (j in raw_weights[i]) {
+                chart_weights[i][j] = +raw_weights[i][j];
+            }
+        }
+
+        // Create the placeholder for the map.
+        map.selectAll("path")
+            .data(map_shape.features)
+            .enter().append("path")
+            .attr("d", path);
+
+        // Create the initial bar chart.
+        y.domain([0, d3.max(chart_weights[day], function(d) { return d; })]);
+
+        chart.selectAll("rect")
+            .data(chart_weights[day])
+            .enter().append("rect")
+            .attr("fill", function(d, i) { return colorize(d, i); })
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height - y(d); });
+
+        redraw(error, map_weights);
+    }
+
+    function redraw(error, weights) {
+
+        // Redraw the labels
+        adjusted_hour = (hour % 12 != 0) ? hour % 12 : 12;
+        suffix = (hour >= 12)? 'pm' : 'am';
+
+        hour_text.text(adjusted_hour + ":00 " + suffix);
+        day_text.text(days[day]);
+
+        if (hour == 0 && day != 0) {
+            source = "" + day - 1 + "_" + 23;
+        } else {
+            source = "" + day + "_" + hour;
+        }
+
+        // Redraw the map
+        var weight_by_id = {};
+
+        weights.forEach(function(d) { weight_by_id[d.id] = +d.weight; });
+
+        map.selectAll("path")
+            .transition()
+            .duration(750)
+            .attr("fill", function(d) {
+                return color(weight_by_id[d.id] || 1 ); });
+
+        // Redraw the chart
+        y.domain([0, d3.max(chart_weights[day], function(d) { return d; })]);
+
+        chart.selectAll("rect")
+            .attr("fill", function(d, i) { return colorize(d, i); })
+            .data(chart_weights[day])
+            .transition()
+            .duration(750)
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height - y(d); });
+    }
+
+    function increase_day(current) {
+        return (current != 6) ? Math.min(6, current + 1) : 0;
+    }
+    function decrease_day(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 6;
+    }
+    function increase_hour(current) {
+        return (current != 23) ? Math.min(23, current + 1) : 0;
+    }
+    function decrease_hour(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 23;
+    }
+
+    function colorize(d, i) {
+        if (i == hour) {
+            code = "#666";
+        } else {
+            if (i < 12) {
+                code = "#BFD3E6";
+            } else {
+                code = "#49006A";
+            }
+        }
+
+        return code;
+    }
+
+    function update() {
+        queue()
+            .defer(d3.csv, "data/weights" + source + ".csv")
+            .await(redraw);
+    }
+
+    window.focus();
+    d3.select(window).on("keydown", function() {
+        switch (d3.event.keyCode) {
+            case 37: hour = decrease_hour(hour); break;
+            case 39: hour = increase_hour(hour); break;
+            case 38: day = decrease_day(day); break;
+            case 40: day = increase_day(day); break;
+        }
+        update();
+    });
+
+</script>

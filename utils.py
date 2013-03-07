@@ -55,3 +55,21 @@ for inpath in glob.glob("/d3/antennas_weight_corrected/*.tsv"):
             max_weight = max(max_weight, total)
 
 print max_weight
+
+regex = re.compile(r'weights(\d+)_*')
+key = lambda name: regex.match(os.path.basename(name)).groups()[0]
+
+files = sorted(glob.glob("/d3/data/weights*.csv"), key=key)
+groups = itertools.groupby(files, key)
+
+frames = {}
+
+for group, data in groups:
+    series = [pandas.Series.from_csv(filename, header=0, index_col=0) for filename in data]
+    frames[group] = pandas.concat(series, join='outer', axis=1)
+
+panel = pandas.Panel(frames)
+total_weight = panel.sum()
+total_weight.to_csv('/d3/data/total_weights.csv', header=True, index=True, index_label='hour')
+
+total_weight.transpose().to_csv('/d3/data/total_weights.csv', header=True, index=False)
