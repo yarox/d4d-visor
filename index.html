@@ -2,9 +2,14 @@
 <meta charset="utf-8">
 <style>
 
-body {
+body,
+svg {
     font: 10px Helvetica Neue;
     fill: #666;
+    width: 100%;
+    height: 100%;
+    margin: 1% auto;
+    overflow: hidden;
 }
 
 .label {
@@ -20,6 +25,11 @@ body {
 
 .hour {
     font-size: 58px;
+}
+
+.counties {
+  stroke: #fff;
+  stroke-width: .25px;
 }
 
 .separator {
@@ -46,17 +56,15 @@ body {
     <script src="http://d3js.org/queue.v1.min.js"></script>
     <script>
 
-    var margin = {top: 50, right: 20, bottom: 30, left: 40},
-        width = window.innerWidth * 0.8 - margin.left - margin.right,
-        height = window.innerHeight * 0.7 - margin.top - margin.bottom;
+    var width = 1200,
+        height = 600;
 
     // Main svg container
-    var svg = d3.select("body").insert("svg:svg", "form")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("svg:g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+    var svg = d3.select("body").append("svg:svg")
+        .attr("viewBox", "0 0 " + width + " " + height)
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("width", width)
+        .attr("height", height);
 
     // Map container
     var color = d3.scale.log()
@@ -66,7 +74,6 @@ body {
 
     var projection = d3.geo.mercator()
         .center([7.1317, 5.5230])
-        .translate([width / 2, 2 * height / 3])
         .rotate([9, -0.75])
         .scale(26000);
 
@@ -76,11 +83,11 @@ body {
     var map = svg.append("svg:g")
         .attr("class", "counties")
         .attr("transform",
-              "translate(" + 515 + "," + 0 + ")");
+              "translate(" + 575 + "," + 85 + ")");
 
     // Chart container
-    var chart_width = 450 - margin.left - margin.right,
-        chart_height = 175 - margin.top - margin.bottom;
+    var chart_width = 350
+        chart_height = 75;
 
     var x = d3.scale.ordinal()
         .domain(d3.range(0, 24))
@@ -98,7 +105,7 @@ body {
     var chart = svg.append("svg:g")
         .attr("class", "chart")
         .attr("transform",
-              "translate(" + 125 + "," + 315 + ")");
+              "translate(" + 160 + "," + 315 + ")");
 
     var bar = chart.append("svg:g")
         .attr("class", "bar");
@@ -137,7 +144,6 @@ body {
                 4: "thursday", 5: "friday", 6: "saturday"},
         hour = 1,
         day = 0,
-        foo,
         chart_weights = [];
 
     // Load the files and display the data
