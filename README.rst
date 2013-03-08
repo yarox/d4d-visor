@@ -5,7 +5,7 @@ Orange `Data for Development`__ is an open data challenge, encouraging research 
 
 .. image:: thumbnail.png
 
-Our team_ used the geolocation data from the antennas in order to know in which areas the customers have been moving around. We tried to extract the the morning and evening rush hours: the time when users were commuting between their place of residence and place of work.
+Our team_ used the geolocation data from call detail records extracted from Orange's customer base in order to know in which areas the customers have been moving around, to help us discover the morning and evening rush hours: the time when users were commuting between their place of residence and place of work.
 
 Visualizations
 ===========
