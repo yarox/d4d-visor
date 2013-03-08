@@ -194,12 +194,6 @@ svg {
         hour_text.text(adjusted_hour + ":00 " + suffix);
         day_text.text(days[day]);
 
-        if (hour == 0 && day != 0) {
-            source = "" + day - 1 + "_" + 23;
-        } else {
-            source = "" + day + "_" + hour;
-        }
-
         // Redraw the map
         var weight_by_id = {};
 
@@ -251,6 +245,12 @@ svg {
     }
 
     function update() {
+        if (hour == 0 && day != 0) {
+            source = "" + day - 1 + "_" + 23;
+        } else {
+            source = "" + day + "_" + hour;
+        }
+
         queue()
             .defer(d3.csv, "data/weights" + source + ".csv")
             .await(redraw);
