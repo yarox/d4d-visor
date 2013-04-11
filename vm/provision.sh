@@ -4,7 +4,12 @@ sudo apt-get -y update
 
 # Add some extra repositories
 sudo apt-get install -y python-software-properties
+
+sudo add-apt-repository ppa:kakrueger/openstreetmap
 sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+
+sudo add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main"
+wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
 
 # Update the package system
 sudo apt-get -y update
@@ -16,10 +21,14 @@ sudo apt-get install -y git
 sudo apt-get install -y python
 sudo apt-get install -y python-dev
 sudo apt-get install -y qgis python-qgis
+sudo apt-get install -y postgresql
+sudo apt-get install -y postgis
+sudo apt-get install -y osm2pgsql
 
 # Install dependecies
-sudo apt-get -y build-dep python-numpy
-sudo apt-get -y build-dep python-matplotlib
+sudo apt-get build-dep -y python-numpy
+sudo apt-get build-dep -y python-matplotlib
+sudo apt-get install -y libxslt1-dev python-shapely python-gdal python-pyproj
 
 # Install distribute and pip
 if ! command -v pip > /dev/null; then

@@ -3,3 +3,4 @@ matplotlib==1.2.0
 numpy==1.6.2
 tornado==2.4.1
 pandas
+https://github.com/kartograph/kartograph.py/zipball/master
