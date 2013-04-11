@@ -41,7 +41,7 @@ Vagrant::Config.run do |config|
   config.vm.share_folder "d3", "/d3", "../"
 
  Vagrant::Config.run do |config|
-    config.vm.provision :shell, :path => "provision.sh"
+    #config.vm.provision :shell, :path => "provision.sh"
   end
 
 end
