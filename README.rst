@@ -9,7 +9,7 @@ Our team_ used the geolocation data from call detail records extracted from Oran
 
 Visualization
 ==========
-We used Python_ for crunching the numbers and D3.js_ for creating the visualization. We took the Africa shape files from `Map Library`_ and Geofabrik_, and used MapShaper_ for simplifying and smoothing the excess of detail. ColorBrewer_ was used as a diagnostic tool for evaluating the robustness of individual color schemes.
+We used Python_ for crunching the numbers and D3.js_ for creating the visualization. We took the Africa shape files from `Map Library`_ and Geofabrik_; `Quantum GIS`_ and MapShaper_ helped us simplifying and smoothing the excess of detail. Finally, ColorBrewer_ was used as a diagnostic tool for evaluating the robustness of individual color schemes.
 
 Bar Chart
 ++++++++
@@ -47,3 +47,4 @@ Once this is running, go to http://localhost:8888/ and use the **up** and **down
 .. _Geofabrik: http://download.geofabrik.de/africa/ivory-coast.html
 .. _MapShaper: http://mapshaper.com/test/MapShaper.swf
 .. _ColorBrewer: http://colorbrewer2.org/
+.. _Quantum GIS: http://www.qgis.org/
