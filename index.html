@@ -5,10 +5,10 @@
 body,
 svg {
     font: 10px Helvetica Neue;
-    fill: #666;
+    fill: none;
     width: 100%;
     height: 100%;
-    margin: auto;
+    margin: 10px auto;
     overflow: hidden;
 }
 
@@ -27,44 +27,14 @@ svg {
     font-size: 58px;
 }
 
-.level3 {
-    fill: #fdf9f6;
-    stroke: #2B83BA;
-    stroke-width: 0.9px;
-    stroke-dasharray: 3,3;
-}
-
-.level2 {
-    fill: none;
-    stroke-width: 2px;
-    stroke-opacity: 0.4;
-    stroke: #D7191C;
-}
-
 .level1 {
-    fill: #FDAE61;
-    stroke: none;
-    opacity: 0.3;
+    stroke: #fff;
+    stroke-width: .25px;
 }
 
 .level0 {
-    fill: none;
-    stroke-width: 7px;
-    stroke: #FDAE61;
-    stroke-opacity: 0.35;
-}
-
-.roads {
-    fill: none;
-    stroke: #1A9641;
-    stroke-width: 0.5px;
-}
-
-.graticule {
-  fill: none;
-  stroke: #666;
-  stroke-width: .25px;
-  stroke-opacity: 0.5;
+    stroke: #fff;
+    stroke-width: 0.75px;
 }
 
 .separator {
@@ -87,7 +57,6 @@ svg {
 </style>
 
 <body>
-    <script src="https://raw.github.com/soyjavi/package-quojs/master/quo.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
     <script src="http://d3js.org/queue.v1.min.js"></script>
@@ -101,14 +70,10 @@ svg {
         .domain([1, 1650])
         .clamp(true);
 
-    var projection = d3.geo.satellite()
-        .distance(2.1)
-        .scale(5000)
-        .rotate([4, -2, 0])
-        .center([-3, 6.5])
-        .tilt(0)
-        .clipAngle(Math.acos(1 / 1.1) * 180 / Math.PI - 1e-6)
-        .precision(.1);
+    var projection = d3.geo.mercator()
+        .center([7.1317, 5.5230])
+        .rotate([7.5, -0.75])
+        .scale(3500);
 
     var path = d3.geo.path()
         .projection(projection);
@@ -126,41 +91,94 @@ svg {
 
     // Map container and child sublayers
     var map = svg.append("svg:g")
-        .attr("class", "map");
+        .attr("class", "map")
+        .attr("transform",
+              "translate(" + 575 + "," + 85 + ")");
+
+    var level1 = map.append("svg:g")
+        .attr("class", "level1");
 
     var level0 = map.append("svg:g")
         .attr("class", "level0");
 
-    var level3 = map.append("svg:g")
-        .attr("class", "level3");
+    // Chart container
+    var chart_width = 350
+        chart_height = 75;
 
-    var roads = map.append("svg:g")
-        .attr("class", "roads");
+    var x = d3.scale.ordinal()
+        .domain(d3.range(0, 24))
+        .rangeRoundBands([0, chart_width], 0.4);
 
-    var level2 = map.append("svg:g")
-        .attr("class", "level2");
+    var y = d3.scale.pow().exponent(2.5)
+        .range([chart_height, 0]);
 
-    var level1 = map.append("svg:g")
-        .attr("class", "level1");
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .tickValues(d3.range(0, 24, 2))
+        .tickFormat(function(t) { return (t == 12 || t == 0) ? 12 : t % 12; })
+        .orient("bottom");
+
+    var chart = svg.append("svg:g")
+        .attr("class", "chart")
+        .attr("transform",
+              "translate(" + 160 + "," + 315 + ")");
+
+    var bar = chart.append("svg:g")
+        .attr("class", "bar");
+
+    var axis = chart.append("svg:g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + chart_height + ")")
+        .call(xAxis);
+
+    // Label container
+    var label = svg.append("svg:g")
+        .attr("class", "label")
+        .attr("transform",
+              "translate(" + 500 + ", " + 150 + ")")
+
+    var day_text = label.append("text")
+        .attr("class", "day")
+        .text("sunday");
+
+    var hour_text = label.append("text")
+        .attr("class", "hour")
+        .attr("transform",
+              "translate(" + 0 + ", " + 60 + ")")
+        .text("1:00 am");
+
+    // Line separator
+    var separator = svg.append("svg:line")
+        .attr("class", "separator")
+        .attr("x1", 540)
+        .attr("y1", 0)
+        .attr("x2", 540)
+        .attr("y2", 500);
+
+    // Other variables
+    var days = {0: "sunday", 1: "monday", 2: "tuesday", 3: "wednesday",
+                4: "thursday", 5: "friday", 6: "saturday"},
+        hour = 1,
+        day = 0,
+        chart_weights = [];
 
     // Load the files and display the data
     queue()
         .defer(d3.json, "data/level0-smp.geojson")
         .defer(d3.json, "data/level1-smp.geojson")
-        // .defer(d3.json, "data/level2-smp.geojson")
-        // .defer(d3.json, "data/level3-smp.geojson")
-        // .defer(d3.json, "data/roads-smp.geojson")
+        .defer(d3.csv, "data/weights0_1.csv")
+        .defer(d3.csv, "data/raw_weights.csv")
         .await(ready);
 
-    // function ready(error, level0_shape, level1_shape, level2_shape,
-    //                level3_shape, roads_shape){
+    function ready(error, level0_shape, level1_shape,
+                   map_weights, raw_weights){
 
-    function ready(error, level0_shape, level1_shape){
-
-        svg.append("path")
-            .datum(graticule)
-                .attr("class", "graticule")
-                .attr("d", path);
+        for (i in raw_weights) {
+            chart_weights[i] = [];
+            for (j in raw_weights[i]) {
+                chart_weights[i][j] = +raw_weights[i][j];
+            }
+        }
 
         level0.selectAll("path")
                 .data(level0_shape.features)
@@ -172,25 +190,102 @@ svg {
             .enter().append("path")
                 .attr("d", path);
 
-        // level2.selectAll("path")
-        //         .data(level2_shape.features)
-        //     .enter().append("path")
-        //         .attr("d", path);
+        // Create the initial bar chart.
+        y.domain([0, d3.max(chart_weights[day], function(d) { return d; })]);
 
-        // level3.selectAll("path")
-        //         .data(level3_shape.features)
-        //     .enter().append("path")
-        //         .attr("d", path);
+        chart.selectAll("rect")
+            .data(chart_weights[day])
+            .enter().append("rect")
+            .attr("fill", function(d, i) { return colorize(d, i); })
+            .attr("x", function(d, i) { return x(i); })
+            .attr("width", x.rangeBand())
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height - y(d); });
 
-        // roads.selectAll("path")
-        //         .data(roads_shape.features)
-        //     .enter().append("path")
-        //         .attr("d", path);
+        redraw(error, map_weights);
 
     }
 
-    $$svg.swipe(function() {
-        alert('swipping!');
+    function redraw(error, weights) {
+
+        // Redraw the labels
+        adjusted_hour = (hour % 12 != 0) ? hour % 12 : 12;
+        suffix = (hour >= 12)? 'pm' : 'am';
+
+        hour_text.text(adjusted_hour + ":00 " + suffix);
+        day_text.text(days[day]);
+
+        // Redraw the map
+        var weight_by_id = {};
+
+        weights.forEach(function(d) { weight_by_id[d.id] = +d.weight; });
+
+        level1.selectAll("path")
+            .transition()
+            .duration(750)
+            .attr("fill", function(d) {
+                return color(weight_by_id[d.id] || 1); });
+
+        // Redraw the chart
+        y.domain([0, d3.max(chart_weights[day], function(d) { return d; })]);
+
+        chart.selectAll("rect")
+            .attr("fill", function(d, i) { return colorize(d, i); })
+            .data(chart_weights[day])
+            .transition()
+            .duration(750)
+            .attr("y", function(d) { return y(d); })
+            .attr("height", function(d) { return chart_height - y(d); });
+    }
+
+    function increase_day(current) {
+        return (current != 6) ? Math.min(6, current + 1) : 0;
+    }
+    function decrease_day(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 6;
+    }
+    function increase_hour(current) {
+        return (current != 23) ? Math.min(23, current + 1) : 0;
+    }
+    function decrease_hour(current) {
+        return (current != 0) ? Math.max(0, current - 1) : 23;
+    }
+
+    function colorize(d, i) {
+        if (i == hour) {
+            code = "#666";
+        } else {
+            if (i < 12) {
+                code = "#BFD3E6";
+            } else {
+                code = "#49006A";
+            }
+        }
+
+        return code;
+    }
+
+    function update() {
+        if (hour == 0 && day != 0) {
+            source = "" + day - 1 + "_" + 23;
+        } else {
+            source = "" + day + "_" + hour;
+        }
+
+        queue()
+            .defer(d3.csv, "data/weights" + source + ".csv")
+            .await(redraw);
+    }
+
+    window.focus();
+    d3.select(window).on("keydown", function() {
+        switch (d3.event.keyCode) {
+            case 37: hour = decrease_hour(hour); break;
+            case 39: hour = increase_hour(hour); break;
+            case 38: day = decrease_day(day); break;
+            case 40: day = increase_day(day); break;
+        }
+        update();
     });
 
 </script>
