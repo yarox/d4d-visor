@@ -2,13 +2,17 @@
 <meta charset="utf-8">
 <style>
 
+body {
+    background: rgba(255, 255, 255, .5);
+}
+
 body,
 svg {
     font: 10px Helvetica Neue;
     fill: none;
     width: 100%;
     height: 100%;
-    margin: 1% auto;
+    margin: 1% 1%;
     overflow: hidden;
 }
 
@@ -87,7 +91,7 @@ svg {
     // Main svg container
     var svg = d3.select("body").append("svg:svg")
         .attr("viewBox", "0 0 " + width + " " + height)
-        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("preserveAspectRatio", "xMidYMid meet")
         .attr("width", width)
         .attr("height", height);
 
