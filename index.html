@@ -8,7 +8,7 @@ svg {
     fill: none;
     width: 100%;
     height: 100%;
-    margin: 10px auto;
+    margin: 1% auto;
     overflow: hidden;
 }
 
@@ -43,9 +43,12 @@ svg {
     stroke-dasharray: 5,5
 }
 
+.axis {
+    fill: #666;
+}
+
 .axis path,
 .axis line {
-    fill: #666;
     stroke: #666;
     shape-rendering: crispEdges;
 }
@@ -58,7 +61,6 @@ svg {
 
 <body>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
     <script src="http://d3js.org/queue.v1.min.js"></script>
     <script>
 
@@ -72,8 +74,8 @@ svg {
 
     var projection = d3.geo.mercator()
         .center([7.1317, 5.5230])
-        .rotate([7.5, -0.75])
-        .scale(3500);
+        .rotate([9, -0.75])
+        .scale(4000);
 
     var path = d3.geo.path()
         .projection(projection);
