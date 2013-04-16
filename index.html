@@ -72,7 +72,7 @@ svg {
         height = 600;
 
     var color = d3.scale.log()
-        .range(["#BFD3E6", "#49006A"])
+        .range(["#C6DBEF", "#084594"])
         .domain([1, 1650])
         .clamp(true);
 
@@ -261,9 +261,9 @@ svg {
             code = "#666";
         } else {
             if (i < 12) {
-                code = "#BFD3E6";
+                code = "#C6DBEF";
             } else {
-                code = "#49006A";
+                code = "#084594";
             }
         }
 
@@ -282,6 +282,17 @@ svg {
             .await(redraw);
     }
 
+    auto_animation = setInterval(function() {
+        if (hour < 23) {
+            hour = increase_hour(hour);
+        } else {
+            hour = increase_hour(hour);
+            day = decrease_day(day);
+        }
+
+        update();
+    }, 1000);
+
     window.focus();
     d3.select(window).on("keydown", function() {
         switch (d3.event.keyCode) {
@@ -290,6 +301,8 @@ svg {
             case 38: day = decrease_day(day); break;
             case 40: day = increase_day(day); break;
         }
+
+        clearInterval(auto_animation);
         update();
     });
 
